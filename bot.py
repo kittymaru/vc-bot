@@ -6,6 +6,8 @@ import os
 load_dotenv()
 BOT_TOKEN = os.getenv("TOKEN")
 
+bot = discord.Bot()
+
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -22,5 +24,7 @@ async def on_message(message):
     
     if message.content.startswith('chuuya'):
         await message.channel.send('i hate chuuya bro')
+    elif message.content.startswith('sans'):
+        await message.channel.send('megalovania')
 
 client.run(BOT_TOKEN)
