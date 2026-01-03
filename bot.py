@@ -1,4 +1,10 @@
 import discord
+from dotenv import load_dotenv
+import os
+
+# Get token
+load_dotenv()
+BOT_TOKEN = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -13,8 +19,8 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
+    
+    if message.content.startswith('chuuya'):
+        await message.channel.send('i hate chuuya bro')
 
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
-
-client.run('your token here')
+client.run(BOT_TOKEN)
