@@ -35,9 +35,41 @@ async def on_ready():
     print(f"We have logged in as {bot.user}")
 
 # test slash command
-@bot.slash_command()
+@bot.slash_command(guild_ids=[os.getenv("GUILD_ID")])
 async def hello(ctx):
     await ctx.respond("Hello!")
+
+# print database (for testing)
+@bot.slash_command(guild_ids=[os.getenv("GUILD_ID")])
+async def printdatabase(ctx):
+    rows = await db.fetch(
+        """
+        SELECT user_id, guild_id, text, created_at
+        FROM transcriptions
+        ORDER BY created_at DESC
+        LIMIT 10
+        """
+    )
+
+    if not rows:
+        await ctx.respond("Database is empty.")
+        return
+
+    message = ""
+    for row in rows:
+        message += (
+            f"User: {row['user_id']}\n"
+            f"Guild: {row['guild_id']}\n"
+            f"Text: {row['text']}\n"
+            f"Time: {row['created_at']}\n"
+            f"---\n"
+        )
+
+    # Discord message limit safety
+    if len(message) > 1900:
+        message = message[:1900] + "\n...(truncated)"
+
+    await ctx.respond(f"```\n{message}\n```")
 
 # end
 @bot.event
