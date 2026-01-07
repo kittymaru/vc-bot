@@ -21,7 +21,7 @@ async def on_ready():
         host=os.getenv("DB_HOST")
     )
 
-    # create/check if table exists
+    # create/check if database exists
     await db.execute("""
         CREATE TABLE IF NOT EXISTS transcriptions (
             id SERIAL PRIMARY KEY,
@@ -40,6 +40,7 @@ async def hello(ctx):
     await ctx.respond("Hello!")
 
 # print database (for testing)
+# TODO: change to write to txt file for unlimited message length
 @bot.slash_command(guild_ids=[os.getenv("GUILD_ID")])
 async def printdatabase(ctx):
     rows = await db.fetch(
@@ -70,6 +71,28 @@ async def printdatabase(ctx):
         message = message[:1900] + "\n...(truncated)"
 
     await ctx.respond(f"```\n{message}\n```")
+
+# join voice channel user is in
+@bot.slash_command(guild_ids=[os.getenv("GUILD_ID")])
+async def join(ctx):
+    # user is not in vc
+    if not ctx.author.voice:
+        await ctx.respond("Join a voice channel first!")
+        return
+    
+    # bot already in vc
+    if ctx.guild.voice_client:
+        await ctx.respond("I'm already connected to a voice channel!")
+        return
+    
+    await ctx.respond("Joined voice channel successfully!")
+    await ctx.author.voice.channel.connect()
+
+# leave voice channel user is in
+
+# select user to record (from user id)
+
+# stop recording, send transcript as txt file
 
 # end
 @bot.event
