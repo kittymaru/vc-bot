@@ -1,7 +1,9 @@
 import discord
 import asyncpg
 from dotenv import load_dotenv
+from discord.sinks import WaveSink
 import os
+import random
 
 # Get token
 load_dotenv()
@@ -32,7 +34,7 @@ async def on_ready():
         )
     """)
 
-    print(f"We have logged in as {bot.user}")
+    print(f"{bot.user} online")
 
 # test slash command
 @bot.slash_command(guild_ids=[os.getenv("GUILD_ID")])
@@ -91,6 +93,7 @@ async def join(ctx):
 # leave voice channel user is in
 @bot.slash_command(guild_ids=[os.getenv("GUILD_ID")])
 async def leave(ctx):
+    # check if in vc
     if not ctx.guild.voice_client:
         await ctx.respond("I'm not connected to a voice channel!")
         return
@@ -99,6 +102,39 @@ async def leave(ctx):
     await ctx.guild.voice_client.disconnect()
 
 # start recording
+@bot.slash_command(guild_ids=[os.getenv("GUILD_ID")])
+async def record(ctx):
+    # check if in vc
+    if not ctx.guild.voice_client:
+        await ctx.respond("I'm not connected to a voice channel!")
+        return
+
+    # check if recording
+    if ctx.guild.voice_client.is_recording():
+        await ctx.respond("I'm already recording!")
+        return
+    
+    # make sink
+    sink = WaveSink()
+
+    # begin recording
+    await ctx.respond("Recording started!")
+    ctx.guild.voice_client.start_recording(sink, record_callback, ctx)
+
+def record_callback(sink, ctx):
+    # make new folder with unique identifier in recordings
+    session_id = f"{ctx.guild.id}_{random.randint(100000, 999999)}"
+    base_path = f"recordings/{session_id}"
+    os.makedirs(base_path, exist_ok=True)
+
+    for user_id, audio in sink.audio_data.items():
+        filename = f"{base_path}/{user_id}.wav"
+
+        with open(filename, "wb") as file:
+            file.write(audio.file.read())
+
+        print(f"Saved recording for {user_id} in local storage")
+    
 
 # stop recording, send transcript as txt file
 
@@ -110,24 +146,3 @@ async def on_close():
         await db.close()
 
 bot.run(BOT_TOKEN)
-
-# intents = discord.Intents.default()
-# intents.message_content = True
-
-# client = discord.Client(intents=intents)
-
-# @client.event
-# async def on_ready():
-#     print(f'We have logged in as {client.user}')
-
-# @client.event
-# async def on_message(message):
-#     if message.author == client.user:
-#         return
-    
-#     if message.content.startswith('chuuya'):
-#         await message.channel.send('i hate chuuya bro')
-#     elif message.content.startswith('sans'):
-#         await message.channel.send('megalovania')
-
-# client.run(BOT_TOKEN)
