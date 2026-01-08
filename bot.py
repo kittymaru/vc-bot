@@ -137,6 +137,23 @@ def record_callback(sink, ctx):
     
 
 # stop recording, send transcript as txt file
+@bot.slash_command(guild_ids=[os.getenv("GUILD_ID")])
+async def stop(ctx):
+    # check if in vc
+    if not ctx.guild.voice_client:
+        await ctx.respond("I'm not connected to a voice channel!")
+        return
+    
+    # check if currently recording
+    if not ctx.guild.voice_client.is_recording():
+        await ctx.respond("I'm not currently recording!")
+        return
+    
+    # stop recording
+    ctx.guild.voice_client.stop_recording()
+    await ctx.respond("Stopped recording!")
+
+    # insert function to process audio
 
 # end
 @bot.event
