@@ -89,8 +89,16 @@ async def join(ctx):
     await ctx.author.voice.channel.connect()
 
 # leave voice channel user is in
+@bot.slash_command(guild_ids=[os.getenv("GUILD_ID")])
+async def leave(ctx):
+    if not ctx.guild.voice_client:
+        await ctx.respond("I'm not connected to a voice channel!")
+        return
+    
+    await ctx.respond("Left voice channel successfully!")
+    await ctx.guild.voice_client.disconnect()
 
-# select user to record (from user id)
+# start recording
 
 # stop recording, send transcript as txt file
 
